@@ -174,12 +174,45 @@ verify_cluster() {
     kubectl get nodes -o wide
     echo ""
 
-    # Wait for Traefik to be ready
-    echo_info "Waiting for Traefik ingress controller to be ready..."
-    kubectl wait --for=condition=available --timeout=120s deployment/traefik -n kube-system 2>/dev/null || {
-        echo_warn "Traefik deployment not found or not ready yet. Waiting for pods..."
-        sleep 10
+    # Wait for Traefik CRD installation to complete
+    echo_info "Waiting for Traefik CRD installation to complete..."
+    local max_crd_wait=60
+    local crd_wait=0
+    while [ $crd_wait -lt $max_crd_wait ]; do
+        if kubectl wait --for=condition=complete --timeout=5s job/helm-install-traefik-crd -n kube-system 2>/dev/null; then
+            echo_info "Traefik CRDs installed successfully!"
+            break
+        fi
+        ((crd_wait+=5))
+        if [ $crd_wait -ge $max_crd_wait ]; then
+            echo_warn "Traefik CRD installation timeout, but continuing..."
+        fi
+    done
+
+    # Wait for Traefik deployment to be ready
+    echo_info "Waiting for Traefik deployment to be ready..."
+    kubectl wait --for=condition=available --timeout=180s deployment/traefik -n kube-system 2>/dev/null || {
+        echo_warn "Traefik deployment not ready yet. Checking status..."
+        kubectl get pods -n kube-system | grep traefik || true
     }
+
+    # Verify IngressRoute CRD is available
+    echo_info "Verifying Traefik IngressRoute CRD is available..."
+    local max_ingressroute_wait=30
+    local ingressroute_wait=0
+    while [ $ingressroute_wait -lt $max_ingressroute_wait ]; do
+        if kubectl get crd ingressroutes.traefik.io &>/dev/null; then
+            echo_info "✓ IngressRoute CRD is ready!"
+            break
+        fi
+        echo_info "Waiting for IngressRoute CRD..."
+        sleep 2
+        ((ingressroute_wait+=2))
+        if [ $ingressroute_wait -ge $max_ingressroute_wait ]; then
+            echo_error "IngressRoute CRD not found. Traefik may not be properly installed."
+            exit 1
+        fi
+    done
 
     echo_info "Cluster components:"
     kubectl get pods -n kube-system
