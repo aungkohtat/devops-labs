@@ -80,7 +80,7 @@ install_argocd() {
 
     # Apply IngressRoute
     echo_info "Applying ArgoCD IngressRoute..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/argocd-ingress.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/argocd-ingress.yaml"
 
     # Wait for ArgoCD server to be ready
     echo_info "Waiting for ArgoCD server to be ready..."
@@ -139,7 +139,7 @@ install_prometheus_stack() {
 
     # Apply IngressRoute
     echo_info "Applying Grafana IngressRoute..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/grafana-ingress.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/grafana-ingress.yaml"
 
     # Wait for Grafana to be ready
     echo_info "Waiting for Grafana to be ready..."
@@ -183,16 +183,16 @@ install_loki() {
 
     # Apply Datasource
     echo_info "Applying Loki Datasource..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/logging/datasource.yaml"
-    
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/logging/datasource.yaml"
+
     echo_info "Applying Cluster Logs Dashboard..."
     # Apply dashboard to monitoring, hoping sidecar picks it up from there (it should)
     # The artifact was created in gitops-root/templates/loki-dashboard.yaml (which syncs to app)
     # But for manual tool install, let's also apply it here.
     # Note: earlier I made gitops-root/templates/loki-dashboard.yaml which defines it in 'app' namespace.
-    # Typically sidecar scans all namespaces or specific ones. 
+    # Typically sidecar scans all namespaces or specific ones.
     # Let's apply it directly to cluster.
-    kubectl apply -f "${SCRIPT_DIR}/gitops-root/templates/loki-dashboard.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../gitops-root/templates/loki-dashboard.yaml"
 }
 
 # ============================================================================
@@ -240,11 +240,11 @@ install_rabbitmq() {
 
     # Deploy RabbitMQ cluster
     echo_info "Deploying RabbitMQ cluster..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/infrastructure/rabbitmq-cluster.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/infrastructure/rabbitmq-cluster.yaml"
 
     # Apply Ingress
     echo_info "Applying RabbitMQ Ingress..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/infrastructure/rabbitmq-ingress.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/infrastructure/rabbitmq-ingress.yaml"
 
     # Wait for RabbitMQ to be ready
     echo_info "Waiting for RabbitMQ cluster to be ready..."
@@ -292,7 +292,7 @@ install_registry() {
 
     # Apply registry manifests
     echo_info "Deploying Docker Registry..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/ci/registry.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/ci/registry.yaml"
 
     # Wait for registry to be ready
     echo_info "Waiting for Registry to be ready..."
@@ -327,14 +327,14 @@ install_jenkins() {
     echo_info "Installing Jenkins via Helm..."
     helm upgrade --install jenkins jenkinsci/jenkins \
         --namespace "${CI_NAMESPACE}" \
-        -f "${SCRIPT_DIR}/k8s/ci/jenkins-values.yaml" \
+        -f "${SCRIPT_DIR}/../k8s/ci/jenkins-values.yaml" \
         --wait --timeout 10m
 
     echo_info "Jenkins installed successfully!"
 
     # Apply IngressRoute
     echo_info "Applying Jenkins IngressRoute..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/ci/jenkins-ingress.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/ci/jenkins-ingress.yaml"
 
     # Wait for Jenkins pod to be ready
     echo_info "Waiting for Jenkins to be ready..."

@@ -28,17 +28,17 @@ build_images() {
 
     # Build Backend
     echo_info "Building backend image (${BACKEND_FULL_IMAGE})..."
-    docker build -t "${BACKEND_FULL_IMAGE}" "${SCRIPT_DIR}/src/backend/"
+    docker build -t "${BACKEND_FULL_IMAGE}" "${SCRIPT_DIR}/../src/backend/"
     echo_info "Backend image built: ${BACKEND_FULL_IMAGE}"
 
     # Build Frontend
     echo_info "Building frontend image (${FRONTEND_FULL_IMAGE})..."
-    docker build -t "${FRONTEND_FULL_IMAGE}" "${SCRIPT_DIR}/src/frontend/"
+    docker build -t "${FRONTEND_FULL_IMAGE}" "${SCRIPT_DIR}/../src/frontend/"
     echo_info "Frontend image built: ${FRONTEND_FULL_IMAGE}"
 
     # Build Worker
     echo_info "Building worker image (lab-worker:v1)..."
-    docker build -t "lab-worker:v1" "${SCRIPT_DIR}/src/worker/"
+    docker build -t "lab-worker:v1" "${SCRIPT_DIR}/../src/worker/"
     echo_info "Worker image built: lab-worker:v1"
 }
 
@@ -78,41 +78,41 @@ deploy_app() {
 
     # Create namespace first
     echo_info "Creating namespace '${APP_NAMESPACE}'..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/namespace.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/namespace.yaml"
 
     # Apply Grafana dashboard to monitoring namespace
     echo_info "Deploying Grafana dashboard..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/grafana-dashboard.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/grafana-dashboard.yaml"
 
     # Deploy in order: Database -> Backend -> Frontend -> Ingress
     echo_info "Deploying PostgreSQL..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/postgres.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/postgres.yaml"
 
     echo_info "Waiting for PostgreSQL to be ready..."
     kubectl wait --for=condition=available --timeout=120s deployment/postgres -n "${APP_NAMESPACE}"
 
     echo_info "Deploying Backend..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/backend.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/backend.yaml"
 
     echo_info "Deploying Frontend..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/frontend.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/frontend.yaml"
 
     echo_info "Deploying Worker..."
-    if [ -f "${SCRIPT_DIR}/k8s/app/worker.yaml" ]; then
-        kubectl apply -f "${SCRIPT_DIR}/k8s/app/worker.yaml"
+    if [ -f "${SCRIPT_DIR}/../k8s/app/worker.yaml" ]; then
+        kubectl apply -f "${SCRIPT_DIR}/../k8s/app/worker.yaml"
     else
         echo_warn "Worker manifest not found!"
     fi
 
 
     echo_info "Creating IngressRoutes..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/ingress.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/ingress.yaml"
 
     echo_info "Creating ServiceMonitor..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/servicemonitor.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/servicemonitor.yaml"
 
     echo_info "Creating KEDA ScaledObject for Worker..."
-    kubectl apply -f "${SCRIPT_DIR}/k8s/app/rabbitmq-scaledobject.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../k8s/app/rabbitmq-scaledobject.yaml"
 
     echo_info "Waiting for all deployments to be ready..."
     kubectl wait --for=condition=available --timeout=120s deployment/backend -n "${APP_NAMESPACE}"
