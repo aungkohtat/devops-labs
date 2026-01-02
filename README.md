@@ -4,6 +4,29 @@
 
 A complete local DevOps lab featuring k3d, ArgoCD, Prometheus, Grafana, Jenkins, and a 3-tier demo application with full observability.
 
+## Prerequisites
+
+Before starting, ensure you have the following installed on your machine:
+
+1. **Docker** (version 20.10+)
+   - Download: <https://docs.docker.com/get-docker/>
+   - Verify: `docker --version`
+
+2. **kubectl** (version 1.26+)
+   - Download: <https://kubernetes.io/docs/tasks/tools/>
+   - Verify: `kubectl version --client`
+
+3. **Helm** (version 3.0+)
+   - Download: <https://helm.sh/docs/intro/install/>
+   - Verify: `helm version`
+
+4. **k3d** (latest version)
+   - Install: `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
+   - Verify: `k3d version`
+
+5. **Git**
+   - Verify: `git --version`
+
 ## ⚠️ Resource Requirements
 
 > **Warning**: This lab runs multiple services and can be resource-intensive!
